@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cornerstone-adb-websocket</artifactId>
+    <packaging>jar</packaging>
+    <name>cornerstone-adb-websocket</name>
+    <description>Cornerstone ADB Websocket Endpoint</description>
+
+    <parent>
+        <groupId>com.github.cornerstonews</groupId>
+        <artifactId>cornerstone-project</artifactId>
+        <version>1.1.0-SNAPSHOT</version>
+        <relativePath>../cornerstone-project/pom.xml</relativePath>
+    </parent>
+
+    <scm>
+        <connection>scm:git:git@github.com:cornerstonews/cornerstone-adb-websocket.git</connection>
+        <developerConnection>scm:git:git@github.com:cornerstonews/cornerstone-adb-websocket.git</developerConnection>
+        <url>https://github.com/cornerstonews/cornerstone-adb-websocket</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jsonp.ri.version>1.1.5</jsonp.ri.version>
+        <moxy.version>2.7.4</moxy.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.cornerstonews</groupId>
+            <artifactId>cornerstone-adb-driver</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.moxy</artifactId>
+            <version>${moxy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <version>${jsonp.ri.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <version>${jsonp.ri.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>
+
