@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import com.github.cornerstonews.adb.FileNode;
 
-@XmlType(name="") // To remove type field from JSON when class is extends other class.
+@XmlType(name = "") // To remove type field from JSON when class is extends other class.
 public class AdbDirectoryGetMessage extends AdbWebsocketMessage {
 
     @XmlElement
@@ -15,6 +15,7 @@ public class AdbDirectoryGetMessage extends AdbWebsocketMessage {
     private FileNode pathDetail;
 
     public AdbDirectoryGetMessage() {
+        this(null);
     }
 
     public AdbDirectoryGetMessage(String deviceSerial) {

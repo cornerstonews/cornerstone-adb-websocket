@@ -16,12 +16,18 @@ import javax.xml.bind.JAXBException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.TimeoutException;
 import com.github.cornerstonews.adb.AdbExecutor;
 import com.github.cornerstonews.adb.AdbManager;
 import com.github.cornerstonews.adb.FileNode;
 import com.github.cornerstonews.adb.websocket.message.AdbDirectoryGetMessage;
 import com.github.cornerstonews.adb.websocket.message.AdbFilePullMessage;
 import com.github.cornerstonews.adb.websocket.message.AdbFilePushMessage;
+import com.github.cornerstonews.adb.websocket.message.AdbRebootMessage;
+import com.github.cornerstonews.adb.websocket.message.AdbShellCommandMessage;
+import com.github.cornerstonews.adb.websocket.message.AdbStatusMessage;
 import com.github.cornerstonews.adb.websocket.message.AdbWebsocketMessage;
 import com.github.cornerstonews.adb.websocket.message.AdbWebsocketMessageType;
 import com.github.cornerstonews.util.JAXBUtils;
@@ -93,7 +99,7 @@ public abstract class AdbWebsocket {
         AdbWebsocketMessage adbMessage;
         try {
             adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbWebsocketMessage.class);
-            
+
             if (adbMessage == null || adbMessage.getMessageType() == null) {
                 LOG.info("Invalid message received, rejecting and sending error client. Message is not Adb Websocket Message Type. ");
                 sendError("Invalid message. Please make sure message is formatted properly and includes a messageType.",
@@ -105,7 +111,7 @@ public abstract class AdbWebsocket {
             sendError("Invalid message. Please make sure message is formatted properly and includes a messageType.", null, session);
             return;
         }
-        
+
         try {
             if (AdbWebsocketMessageType.AUTH == adbMessage.getMessageType() || this.deviceAdbExecutor == null) {
                 authenticate(adbMessage, session);
@@ -113,21 +119,37 @@ public abstract class AdbWebsocket {
             }
 
             switch (adbMessage.getMessageType()) {
-                case FILE_PUSH:
-                    adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbFilePushMessage.class);
-                    handleFilePush((AdbFilePushMessage) adbMessage, session);
-                    break;
-    
-                case FILE_PULL:
-                    adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbFilePullMessage.class);
-                    handleFilePull((AdbFilePullMessage) adbMessage, session);
-                    break;
-    
+
                 case DIRECTORY_GET:
                     adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbDirectoryGetMessage.class);
                     handleDirectoryGet((AdbDirectoryGetMessage) adbMessage, session);
                     break;
-    
+
+                case FILE_PUSH:
+                    adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbFilePushMessage.class);
+                    handleFilePush((AdbFilePushMessage) adbMessage, session);
+                    break;
+
+                case FILE_PULL:
+                    adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbFilePullMessage.class);
+                    handleFilePull((AdbFilePullMessage) adbMessage, session);
+                    break;
+
+                case REBOOT:
+                    adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbRebootMessage.class);
+                    handleReboot((AdbRebootMessage) adbMessage, session);
+                    break;
+
+                case SHELL_COMMAND:
+                    adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbShellCommandMessage.class);
+                    handleShellCommand((AdbShellCommandMessage) adbMessage, session);
+                    break;
+
+                case STATUS:
+                    adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbStatusMessage.class);
+                    handleStatus((AdbStatusMessage) adbMessage, session);
+                    break;
+
                 default:
                     sendError("Unknown ADB command.", adbMessage, session);
                     return;
@@ -153,7 +175,8 @@ public abstract class AdbWebsocket {
         LOG.debug("Binary Message received.");
         if (this.filePushProcessor == null) {
             LOG.info("Unsolicited file transfer. Sending rejection to client.");
-            sendError("Unsolicited file transfer. Please initiate file transfer request.", new AdbFilePushMessage(this.deviceAdbExecutor.getDeviceSerial()), session);
+            sendError("Unsolicited file transfer. Please initiate file transfer request.", new AdbFilePushMessage(this.deviceAdbExecutor.getDeviceSerial()),
+                    session);
         }
 
         try {
@@ -210,7 +233,7 @@ public abstract class AdbWebsocket {
         if (deviceAdbExecutor == null) {
             sendError("Authentication Failure. Device not found.", adbMessage, session);
         }
-        
+
         this.sendSuccess(200, "Auth success.", adbMessage, session);
     }
 
@@ -254,6 +277,33 @@ public abstract class AdbWebsocket {
         } finally {
             this.filePullProcessor = null;
         }
+    }
+
+    private void handleReboot(AdbRebootMessage adbMessage, Session session) throws JAXBException {
+        try {
+            this.deviceAdbExecutor.reboot();
+            this.sendSuccess(200, "Phone reboot command successfully executed.", adbMessage, session);
+        } catch (TimeoutException | AdbCommandRejectedException | IOException e) {
+            LOG.error("Error running reboot command on phone {} for client: {}, Error: {}", adbMessage.getDeviceSerial(), this.deviceAdbExecutor.getDeviceSerial(), e);
+            this.sendError("Error running reboot command.", adbMessage, session);
+        }
+    }
+
+    private void handleShellCommand(AdbShellCommandMessage adbMessage, Session session) throws JAXBException {
+        try {
+            String commandOutput = this.deviceAdbExecutor.executeShellCommand(adbMessage.getShellCommand());
+            adbMessage.setShellCommandOutput(commandOutput);
+            this.sendSuccess(200, "Command successfully executed.", adbMessage, session);
+        } catch (TimeoutException | AdbCommandRejectedException | ShellCommandUnresponsiveException | IOException e) {
+            LOG.error("Error running command on phone {} for client: {}, Error: {}", adbMessage.getDeviceSerial(), this.deviceAdbExecutor.getDeviceSerial(), e);
+            this.sendError("Error running command.", adbMessage, session);
+        }
+    }
+
+    private void handleStatus(AdbStatusMessage adbMessage, Session session) throws IOException, JAXBException {
+        String status = this.deviceAdbExecutor.isOnline() ? "online" : "offline";
+        adbMessage.setStatus(status);
+        this.sendSuccess(200, "Status successfully executed.", adbMessage, session);
     }
 
 }
