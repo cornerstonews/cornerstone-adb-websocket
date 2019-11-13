@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.UUID;
 
+import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
 import org.apache.logging.log4j.LogManager;
@@ -26,12 +27,15 @@ public class AdbFileTransferProcessor {
 
     private static final Logger LOG = LogManager.getLogger(AdbFileTransferProcessor.class);
 
+    private static final int BUFFER_SIZE = 1024 * 64;
+    
     private AdbFileMessage adbMessage;
     private String tmpFileName = UUID.randomUUID().toString();
 
     private FileOutputStream fos = null;
     private File file;
     private FileChannel fc;
+    private long transferedSize;
 
     public AdbFileTransferProcessor(AdbFileMessage adbMessage, Session session) throws FileNotFoundException {
         this.adbMessage = adbMessage;
@@ -47,7 +51,9 @@ public class AdbFileTransferProcessor {
 
     public void processFilePush(ByteBuffer message, boolean isLast) throws IOException {
         fc.write(message);
-        if (isLast) {
+        this.transferedSize = fc.size();
+//        if (isLast) {
+        if (isFileValid()) {
             cleanupStreams();
         }
     }
@@ -57,9 +63,9 @@ public class AdbFileTransferProcessor {
         adbExecutor.pushFile(this.file.getCanonicalPath(), adbMessage.getFullPath());
     }
 
-    public boolean isFileValid() {
-        // Add checksum
-        return true;
+    public boolean isFileValid() throws IOException {
+        // TODO: Add checksum
+        return this.transferedSize == adbMessage.getSize();
     }
 
     public String pullFileFromPhone(AdbExecutor adbExecutor) throws SyncException, IOException, AdbCommandRejectedException, TimeoutException {
@@ -73,7 +79,7 @@ public class AdbFileTransferProcessor {
             this.pullFileFromPhone(adbExecutor);
             
             int len = 0;
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[BUFFER_SIZE];
             while ((len = inputStream.read(buffer)) > 0) {
                 outputStream.write(buffer, 0, len);
             }
@@ -89,6 +95,28 @@ public class AdbFileTransferProcessor {
         }
     }
 
+    public void processFilePull(AdbExecutor adbExecutor, Basic basicRemote) throws FileNotFoundException, IOException {
+        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(this.file.getCanonicalFile()))) {
+            this.pullFileFromPhone(adbExecutor);
+            
+            int len = 0;
+            int remaining = (int) this.file.length();
+            byte[] buffer = new byte[BUFFER_SIZE];
+            while ((inputStream.read(buffer)) > 0) {
+                len += buffer.length;
+                basicRemote.sendBinary(ByteBuffer.wrap(buffer));
+                if((remaining = (int) this.file.length() - len) < BUFFER_SIZE) {
+                    buffer = new byte[remaining];
+                }
+            }
+        } catch (SyncException | AdbCommandRejectedException | TimeoutException e) {
+            throw new IOException(e);
+        }
+        finally {
+            this.cleanup();
+        }
+    }
+    
     public void cleanup() throws IOException {
         if (this.file != null && this.file.exists()) {
             this.file.delete();

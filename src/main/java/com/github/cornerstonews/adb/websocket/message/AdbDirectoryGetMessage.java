@@ -10,6 +10,9 @@ public class AdbDirectoryGetMessage extends AdbWebsocketMessage {
 
     @XmlElement
     private String path;
+    
+    @XmlElement
+    private Boolean getChildren = false;
 
     @XmlElement
     private FileNode pathDetail;
@@ -30,6 +33,14 @@ public class AdbDirectoryGetMessage extends AdbWebsocketMessage {
         this.path = path;
     }
 
+    public Boolean getGetChildren() {
+        return getChildren;
+    }
+
+    public void setGetChildren(Boolean getChildren) {
+        this.getChildren = getChildren;
+    }
+
     public FileNode getPathDetail() {
         return pathDetail;
     }
@@ -37,5 +48,4 @@ public class AdbDirectoryGetMessage extends AdbWebsocketMessage {
     public void setPathDetail(FileNode pathDetail) {
         this.pathDetail = pathDetail;
     }
-
 }
