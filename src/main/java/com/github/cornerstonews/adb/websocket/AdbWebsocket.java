@@ -37,8 +37,8 @@ public abstract class AdbWebsocket {
 
     private static final Logger LOG = LogManager.getLogger(AdbWebsocket.class);
 
-    private AdbManager adbManager;
-    private AdbExecutor deviceAdbExecutor;
+    protected AdbManager adbManager;
+    protected AdbExecutor deviceAdbExecutor;
 
     private AdbFileTransferProcessor filePullProcessor;
     private AdbFileTransferProcessor filePushProcessor;
@@ -196,11 +196,11 @@ public abstract class AdbWebsocket {
         }
     }
     
-    private String getDeviceSerial() {
+    protected String getDeviceSerial() {
         return (this.deviceAdbExecutor == null) ? "Device serial not available" : this.deviceAdbExecutor.getDeviceSerial();
     }
 
-    private void sendError(String errorString, AdbWebsocketMessage errorMessage, Session session) {
+    protected void sendError(String errorString, AdbWebsocketMessage errorMessage, Session session) {
         try {
             if (errorMessage == null) {
                 errorMessage = new AdbWebsocketMessage(null, getDeviceSerial());
@@ -215,7 +215,7 @@ public abstract class AdbWebsocket {
         }
     }
 
-    private void sendSuccess(Integer statusCode, String message, AdbWebsocketMessage adbMessage, Session session) throws IOException, JAXBException {
+    protected void sendSuccess(Integer statusCode, String message, AdbWebsocketMessage adbMessage, Session session) throws IOException, JAXBException {
         adbMessage.setStatusCode(statusCode);
         adbMessage.setMessage(message);
         session.getBasicRemote().sendText(JAXBUtils.marshalToJSON(adbMessage));
@@ -242,7 +242,7 @@ public abstract class AdbWebsocket {
         this.sendSuccess(200, "Auth success.", adbMessage, session);
     }
 
-    private void handleDirectoryGet(AdbDirectoryGetMessage adbMessage, Session session) throws IOException, JAXBException {
+    protected void handleDirectoryGet(AdbDirectoryGetMessage adbMessage, Session session) throws IOException, JAXBException {
         FileNode pathDetail = this.deviceAdbExecutor.getPath(adbMessage.getPath(), adbMessage.getGetChildren());
         adbMessage.setPathDetail(pathDetail);
         this.sendSuccess(200, "Directory get successful.", adbMessage, session);
@@ -285,7 +285,7 @@ public abstract class AdbWebsocket {
         }
     }
 
-    private void handleReboot(AdbRebootMessage adbMessage, Session session) throws JAXBException {
+    protected void handleReboot(AdbRebootMessage adbMessage, Session session) throws JAXBException {
         try {
             this.deviceAdbExecutor.reboot();
             this.sendSuccess(200, "Phone reboot command successfully executed.", adbMessage, session);
@@ -295,7 +295,7 @@ public abstract class AdbWebsocket {
         }
     }
 
-    private void handleShellCommand(AdbShellCommandMessage adbMessage, Session session) throws JAXBException {
+    protected void handleShellCommand(AdbShellCommandMessage adbMessage, Session session) throws JAXBException {
         try {
             String commandOutput = this.deviceAdbExecutor.executeShellCommand(adbMessage.getShellCommand());
             adbMessage.setShellCommandOutput(commandOutput);
@@ -306,7 +306,7 @@ public abstract class AdbWebsocket {
         }
     }
 
-    private void handleStatus(AdbStatusMessage adbMessage, Session session) throws IOException, JAXBException {
+    protected void handleStatus(AdbStatusMessage adbMessage, Session session) throws IOException, JAXBException {
         String status = this.deviceAdbExecutor.isOnline() ? "online" : "offline";
         adbMessage.setStatus(status);
         this.sendSuccess(200, "Status successfully executed.", adbMessage, session);
