@@ -1,7 +1,7 @@
 package com.github.cornerstonews.adb.websocket;
 
 import java.io.IOException;
-import java.io.OutputStream;
+//import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import javax.websocket.CloseReason;
