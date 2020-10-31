@@ -33,6 +33,8 @@ public class AdbDevicesGetMessage extends AdbWebsocketMessage {
         
         @XmlElement
         private String status;
+        
+        public DeviceStatus() {}
 
 		public DeviceStatus(String deviceSerial, String status) {
 			this.deviceSerial = deviceSerial;
