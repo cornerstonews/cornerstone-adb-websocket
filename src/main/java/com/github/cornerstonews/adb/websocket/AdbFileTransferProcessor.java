@@ -99,14 +99,17 @@ public class AdbFileTransferProcessor {
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(this.file.getCanonicalFile()))) {
             this.pullFileFromPhone(adbExecutor);
             
-            int len = 0;
-            int remaining = (int) this.file.length();
-            byte[] buffer = new byte[BUFFER_SIZE];
-            while ((inputStream.read(buffer)) > 0) {
-                len += buffer.length;
+            long sent = 0;
+            long len = 0;
+            long remaining = this.file.length();
+            int bufferSize = (remaining < BUFFER_SIZE) ? (int) remaining : BUFFER_SIZE;
+            byte[] buffer = new byte[bufferSize];
+            while ((len = inputStream.read(buffer)) > 0) {
+                sent += len;
                 basicRemote.sendBinary(ByteBuffer.wrap(buffer));
-                if((remaining = (int) this.file.length() - len) < BUFFER_SIZE) {
-                    buffer = new byte[remaining];
+                remaining = this.file.length() - sent;
+                if(remaining > 0 && remaining < BUFFER_SIZE) {
+                    buffer = new byte[(int) remaining];
                 }
             }
         } catch (SyncException | AdbCommandRejectedException | TimeoutException e) {
