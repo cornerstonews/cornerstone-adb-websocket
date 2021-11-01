@@ -5,11 +5,13 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import com.github.cornerstonews.adb.DeviceDO;
+
 @XmlType(name = "") // To remove type field from JSON when class is extends other class.
 public class AdbDevicesGetMessage extends AdbWebsocketMessage {
 
     @XmlElement
-    private List<DeviceStatus> devices;
+    private List<DeviceDO> devices;
 
     public AdbDevicesGetMessage() {
         this(null);
@@ -19,42 +21,11 @@ public class AdbDevicesGetMessage extends AdbWebsocketMessage {
         super(AdbWebsocketMessageType.DEVICES_GET, deviceSerial);
     }
 
-    public List<DeviceStatus> getDevices() {
-		return devices;
-	}
+    public List<DeviceDO> getDevices() {
+        return devices;
+    }
 
-	public void setDevices(List<DeviceStatus> devices) {
-		this.devices = devices;
-	}
-
-	public static class DeviceStatus {
-        @XmlElement
-        private String deviceSerial;
-        
-        @XmlElement
-        private String status;
-        
-        public DeviceStatus() {}
-
-		public DeviceStatus(String deviceSerial, String status) {
-			this.deviceSerial = deviceSerial;
-			this.status = status;
-		}
-
-		public String getDeviceSerial() {
-			return deviceSerial;
-		}
-
-		public void setDeviceSerial(String deviceSerial) {
-			this.deviceSerial = deviceSerial;
-		}
-
-		public String getStatus() {
-			return status;
-		}
-
-		public void setStatus(String status) {
-			this.status = status;
-		}
+    public void setDevices(List<DeviceDO> devices) {
+        this.devices = devices;
     }
 }
