@@ -13,10 +13,11 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
-import org.eclipse.persistence.exceptions.XMLMarshalException;
 import org.eclipse.persistence.jaxb.JAXBContextFactory;
 import org.eclipse.persistence.jaxb.MarshallerProperties;
 import org.eclipse.persistence.oxm.XMLConstants;
+
+
 
 public abstract class JAXBUtils {
 
@@ -71,19 +72,16 @@ public abstract class JAXBUtils {
             ctx = getContext(expectedType);
         }
 
-        try {
-            Unmarshaller unmarshaller = ctx.createUnmarshaller();
-            unmarshaller.setProperty(MarshallerProperties.MEDIA_TYPE, APPLICATION_JSON);
-            unmarshaller.setProperty(MarshallerProperties.JSON_INCLUDE_ROOT, Boolean.FALSE);
+        Unmarshaller unmarshaller = ctx.createUnmarshaller();
+        unmarshaller.setProperty(MarshallerProperties.MEDIA_TYPE, APPLICATION_JSON);
+        unmarshaller.setProperty(MarshallerProperties.JSON_INCLUDE_ROOT, Boolean.FALSE);
 
-            Reader reader = new StringReader(jsonObjectString);
-            StreamSource source = new StreamSource(reader);
+        Reader reader = new StringReader(jsonObjectString);
+        StreamSource source = new StreamSource(reader);
 
-            JAXBElement<T> jaxbElement = unmarshaller.unmarshal(source, expectedType);
-            return jaxbElement.getValue();
-        } catch (XMLMarshalException e) {
-            throw new JAXBException(e);
-        }
+        JAXBElement<T> jaxbElement = unmarshaller.unmarshal(source, expectedType);
+        return jaxbElement.getValue();
+
     }
 
     private static <T> JAXBContext getContext(Class<T> type) throws JAXBException {
