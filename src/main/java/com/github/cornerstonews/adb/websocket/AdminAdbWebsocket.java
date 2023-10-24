@@ -36,7 +36,7 @@ public abstract class AdminAdbWebsocket extends AdbWebsocket {
     @OnMessage
     public void onMessage(Session session, String message, boolean isLast) {
         LOG.info("Received a string message.");
-        LOG.debug("Message received: {}", message);
+        LOG.debug("Message received: '{}'", message);
 
         AdbWebsocketMessage adbMessage;
         try {
@@ -53,7 +53,7 @@ public abstract class AdminAdbWebsocket extends AdbWebsocket {
             return;
         }
 
-        LOG.info("Message Type: {}", adbMessage.getMessageType());
+        LOG.info("Message Type: '{}'", adbMessage.getMessageType());
         try {
             if (AdbWebsocketMessageType.DEVICES_GET == adbMessage.getMessageType()) {
                 adbMessage = JAXBUtils.unmarshalFromJSON(message, AdbDevicesGetMessage.class);
@@ -95,7 +95,8 @@ public abstract class AdminAdbWebsocket extends AdbWebsocket {
                     break;
             }
         } catch (JAXBException | IOException | CornerstoneADBException e) {
-            LOG.error("Error processing message for device serial '{}', Error: {}", adbMessage.getDeviceSerial(), e.getMessage(), e);
+            LOG.error("Error processing message for device, Error: '{}'", e.getMessage(), e);
+            LOG.trace("Error processing message for device serial '{}', Error: '{}'", adbMessage.getDeviceSerial(), e.getMessage());
             sendError("Error processing message. Error: " + e.getMessage(), adbMessage, session);
             return;
         }
