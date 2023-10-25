@@ -69,7 +69,9 @@ public abstract class AdbWebsocket {
      */
     @OnClose
     public void onClose(Session session, CloseReason reason) {
-        LOG.info("Connection closed for device {}, Reason: {}", getDeviceSerial(), reason);
+        LOG.info("Connection closed for device, Reason: '{}'", reason);
+        LOG.trace("Connection closed for device '{}', Reason: '{}'", getDeviceSerial(), reason);
+
     }
 
     /**
@@ -81,7 +83,8 @@ public abstract class AdbWebsocket {
      */
     @OnError
     public void onError(Session session, Throwable t) {
-        LOG.error("Connection Error with device: {}.", getDeviceSerial(), t);
+        LOG.error("Connection Error with device, Error: '{}'", t.getMessage(), t);
+        LOG.trace("Connection Error with device: '{}', Error: '{}'", getDeviceSerial(), t.getMessage());
     }
 
     /**
@@ -95,7 +98,7 @@ public abstract class AdbWebsocket {
     @OnMessage
     public void onMessage(Session session, String message, boolean isLast) {
         LOG.info("Received a string message.");
-        LOG.debug("Message received: {}", message);
+        LOG.debug("Message received: '{}'", message);
 
         AdbWebsocketMessage adbMessage;
         try {
@@ -119,7 +122,7 @@ public abstract class AdbWebsocket {
             }
 
             if (!Objects.equal(this.deviceSerial, adbMessage.getDeviceSerial())) {
-                sendError("Authentication Failure. Device serial deos not match with authenticated device.", adbMessage, session);
+                sendError("Authentication Failure. Device serial does not match with authenticated device.", adbMessage, session);
                 return;
             }
 
@@ -160,7 +163,9 @@ public abstract class AdbWebsocket {
                     break;
             }
         } catch (JAXBException | IOException | CornerstoneADBException e) {
-            LOG.error("Error processing message for device serial '{}', Error: {}", adbMessage.getDeviceSerial(), e.getMessage(), e);
+            LOG.error("Error processing message for device, Error: '{}'", e.getMessage(), e);
+            LOG.trace("Error processing message for device serial '{}', Error: '{}'", adbMessage.getDeviceSerial(), e.getMessage());
+
             sendError("Error processing message. Error: " + e.getMessage(), adbMessage, session);
             return;
         }
@@ -194,7 +199,7 @@ public abstract class AdbWebsocket {
                 this.filePushProcessor = null;
             }
         } catch (Exception e) {
-            LOG.error("Error while transfering binary message: ", e.getMessage(), e);
+            LOG.error("Error while transferring binary message, Error: '{}'", e.getMessage(), e);
             sendError("File Transfer error.", new AdbFilePushMessage(getDeviceSerial()), session);
             this.filePushProcessor.cleanup();
             this.filePushProcessor = null;
@@ -225,10 +230,11 @@ public abstract class AdbWebsocket {
             errorMessage.setStatusCode(400);
             errorMessage.setMessage(errorString);
             session.getBasicRemote().sendText(JAXBUtils.marshalToJSON(errorMessage));
-            LOG.info("Sent error to client for device: {}, Error: {}", getDeviceSerial(errorMessage), errorString);
-            LOG.trace("ErrorMessage: {}", getDeviceSerial(errorMessage), errorMessage);
+            LOG.info("Sent error to client, Error: '{}'", errorString);
+            LOG.trace("Sent error to client: '{}', ErrorMessage: '{}'", getDeviceSerial(errorMessage), errorMessage);
         } catch (IOException | JAXBException e) {
-            LOG.error("Error sending message to client: {}, Error: {}", getDeviceSerial(errorMessage), e.getMessage(), e);
+            LOG.error("Error sending message to client, Error: '{}'", e.getMessage(), e);
+            LOG.trace("Error sending message to client: '{}', Error: '{}'", getDeviceSerial(errorMessage), e.getMessage());
         }
     }
 
@@ -236,7 +242,7 @@ public abstract class AdbWebsocket {
         adbMessage.setStatusCode(statusCode);
         adbMessage.setMessage(message);
         session.getBasicRemote().sendText(JAXBUtils.marshalToJSON(adbMessage));
-        LOG.info("Success message sent to client for message type: '{}' and device: '{}'", adbMessage.getMessageType(), getDeviceSerial(adbMessage));
+        LOG.info("Success message sent to client for message type: '{}'", adbMessage.getMessageType());
         LOG.trace("Success message sent to client for message: '{}' and device: '{}'", adbMessage, getDeviceSerial(adbMessage));
     }
 
@@ -277,7 +283,8 @@ public abstract class AdbWebsocket {
             this.sendSuccess(201, "Ready for push. Waiting for data.", adbMessage, session);
         } catch (Exception e) {
             this.filePushProcessor = null;
-            LOG.error("File transfer Error for client: {}, Error: {}", getDeviceSerial(), e.getMessage(), e);
+            LOG.error("File transfer Error for client, Error: '{}'", e.getMessage(), e);
+            LOG.trace("File transfer Error for client: '{}', Error: '{}'", getDeviceSerial(), e.getMessage());
             this.sendError("File transfer Error.", adbMessage, session);
         }
     }
@@ -296,7 +303,8 @@ public abstract class AdbWebsocket {
             this.filePullProcessor.processFilePull(adbManager.getDevice(this.deviceSerial), session.getBasicRemote());
             this.sendSuccess(200, "File pull successful.", adbMessage, session);
         } catch (Exception e) {
-            LOG.error("File transfer Error for client: {}, Error: {}", getDeviceSerial(), e.getMessage(), e);
+            LOG.error("File transfer Error for client, Error: '{}'", e.getMessage(), e);
+            LOG.trace("File transfer Error for client: '{}', Error: '{}'", getDeviceSerial(), e.getMessage());
             this.sendError("File transfer Error.", adbMessage, session);
         } finally {
             this.filePullProcessor = null;
@@ -308,7 +316,8 @@ public abstract class AdbWebsocket {
             this.adbManager.getDevice(this.deviceSerial).reboot();
             this.sendSuccess(200, "Phone reboot command successfully executed.", adbMessage, session);
         } catch (TimeoutException | AdbCommandRejectedException | IOException e) {
-            LOG.error("Error running reboot command on phone {}, Error: {}", adbMessage.getDeviceSerial(), e);
+            LOG.error("Error running reboot command, Error: '{}'", e.getMessage(), e);
+            LOG.trace("Error running reboot command on phone '{}', Error: '{}'", adbMessage.getDeviceSerial(), e.getMessage());
             this.sendError("Error running reboot command.", adbMessage, session);
         }
     }
@@ -319,7 +328,8 @@ public abstract class AdbWebsocket {
             adbMessage.setShellCommandOutput(commandOutput);
             this.sendSuccess(200, "Command successfully executed.", adbMessage, session);
         } catch (TimeoutException | AdbCommandRejectedException | ShellCommandUnresponsiveException | IOException e) {
-            LOG.error("Error running command on phone {} for client: {}, Error: {}", adbMessage.getDeviceSerial(), getDeviceSerial(), e);
+            LOG.error("Error running command on phone, Error: '{}'", e.getMessage(), e);
+            LOG.trace("Error running command on phone '{}' for client: '{}', Error: '{}'", adbMessage.getDeviceSerial(), getDeviceSerial(), e.getMessage());
             this.sendError("Error running command.", adbMessage, session);
         }
     }
