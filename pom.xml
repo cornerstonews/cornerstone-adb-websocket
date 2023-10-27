@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>cornerstone-adb-websocket</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>1.4.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>cornerstone-adb-websocket</name>
     <description>Cornerstone ADB Websocket Endpoint</description>
