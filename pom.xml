@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>cornerstone-adb-websocket</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>1.4.1</version>
     <packaging>jar</packaging>
     <name>cornerstone-adb-websocket</name>
     <description>Cornerstone ADB Websocket Endpoint</description>
@@ -19,7 +19,7 @@
         <connection>scm:git:git@github.com:cornerstonews/cornerstone-adb-websocket.git</connection>
         <developerConnection>scm:git:git@github.com:cornerstonews/cornerstone-adb-websocket.git</developerConnection>
         <url>https://github.com/cornerstonews/cornerstone-adb-websocket</url>
-        <tag>cornerstone-adb-websocket-1.4.0</tag>
+        <tag>cornerstone-adb-websocket-1.4.1</tag>
     </scm>
 
     <properties>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.github.cornerstonews</groupId>
             <artifactId>cornerstone-adb-driver</artifactId>
-            <version>1.4.3-SNAPSHOT</version>
+            <version>1.4.3</version>
         </dependency>
 
         <dependency>
